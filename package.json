@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node --experimental-specifier-resolution=node dist/index.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "start": "node dist/index.js",
+    "test": "node node_modules/jest/bin/jest.js"
   },
   "bin": {
     "bit": "./dist/index.js"
