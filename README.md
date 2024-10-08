@@ -2,6 +2,6 @@
 
 OSS Git Implementation from scratch (basic version).
 
-## Features
+## Key Features
 
 ### Initialize a Repository

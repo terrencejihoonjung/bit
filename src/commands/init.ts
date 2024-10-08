@@ -1,5 +1,6 @@
 import { existsSync } from "fs";
 import path from "path";
+import os from "os";
 import fs from "fs/promises";
 
 async function init() {
@@ -12,6 +13,7 @@ async function init() {
   }
 
   const rootPath = path.resolve(".bit");
+  const username = os.userInfo().username;
 
   try {
     // Create new .bit directory
@@ -24,13 +26,20 @@ async function init() {
     await fs.mkdir(headsPath, { recursive: true });
     await writeInitialHEAD(rootPath);
 
+    // Create config file
+    const initialConfig = `[branch]
+      default = main
+    [user]
+      name = ${username}
+    `;
+
     // Create remaining subdirectories and files
     await fs.mkdir(path.join(rootPath, "objects"));
-    await fs.writeFile(path.join(rootPath, "config"), "");
+    await fs.writeFile(path.join(rootPath, "config"), initialConfig);
     await fs.writeFile(path.join(rootPath, "index"), "");
 
     // User Feedback
-    console.log("Successfully initialized bit repository");
+    console.log(`Successfully initialized bit repository for ${username}`);
   } catch (error) {
     if (error instanceof Error) {
       console.error("Failed to initialize bit repository:", error.message);
