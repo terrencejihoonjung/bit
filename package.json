@@ -9,12 +9,14 @@
     "start": "node --experimental-specifier-resolution=node dist/index.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
+  "bin": {
+    "bit": "./dist/index.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "commander": "^12.1.0",
-    "fs-extra": "^11.2.0"
+    "commander": "^12.1.0"
   },
   "devDependencies": {
     "@types/commander": "^2.12.2",

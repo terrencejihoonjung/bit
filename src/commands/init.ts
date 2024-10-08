@@ -1,0 +1,54 @@
+import { existsSync } from "fs";
+import path from "path";
+import fs from "fs/promises";
+
+async function init() {
+  console.log("Initializing bit repository...");
+
+  // Check for existing bit repository
+  if (existsSync(".bit")) {
+    console.log(".bit directory already exists");
+    return;
+  }
+
+  const rootPath = path.resolve(".bit");
+
+  try {
+    // Create new .bit directory
+    await fs.mkdir(rootPath);
+
+    // Setup paths
+    const headsPath = path.join(rootPath, "refs", "heads");
+
+    // Create default branch
+    await fs.mkdir(headsPath, { recursive: true });
+    await writeInitialHEAD(rootPath);
+
+    // Create remaining subdirectories and files
+    await fs.mkdir(path.join(rootPath, "objects"));
+    await fs.writeFile(path.join(rootPath, "config"), "");
+    await fs.writeFile(path.join(rootPath, "index"), "");
+
+    // User Feedback
+    console.log("Successfully initialized bit repository");
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Failed to initialize bit repository:", error.message);
+      try {
+        await fs.rm(rootPath, { recursive: true });
+      } catch (cleanupError) {
+        console.error("Failed to clean up partial initialization.");
+      }
+    }
+  }
+}
+
+async function writeInitialHEAD(
+  rootPath: string,
+  defaultBranch: string = "main"
+) {
+  const content = `ref: refs/heads/${defaultBranch}\n`;
+  await fs.writeFile(path.join(rootPath, "HEAD"), content);
+}
+
+export default init;
