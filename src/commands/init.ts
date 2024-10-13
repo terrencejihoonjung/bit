@@ -18,7 +18,6 @@ async function init() {
     // Create new .bit directory
     await fs.mkdir(".bit");
     const rootPath = path.resolve(".bit");
-    console.log(rootPath);
 
     // Setup paths
     const headsPath = path.join(rootPath, "refs", "heads");
@@ -33,11 +32,10 @@ async function init() {
     [user]
       name = ${username}
     `;
-
-    // Create remaining subdirectories and files
-    await fs.mkdir(path.join(rootPath, "objects"));
     await fs.writeFile(path.join(rootPath, "config"), initialConfig);
-    await fs.writeFile(path.join(rootPath, "index"), "");
+
+    // Create objects directory
+    await fs.mkdir(path.join(rootPath, "objects"));
 
     // User Feedback
     console.log(`Successfully initialized bit repository for ${username}`);
@@ -45,6 +43,7 @@ async function init() {
     if (error instanceof Error) {
       console.error("Failed to initialize bit repository:", error.message);
       try {
+        // Delete the entire .bit repository
         await fs.rm(path.resolve(".bit"), { recursive: true });
       } catch (cleanupError) {
         console.error("Failed to clean up partial initialization.");
