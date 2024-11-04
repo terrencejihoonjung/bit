@@ -20,7 +20,7 @@ async function stage(files: string[]) {
     await fs.writeFile(indexPath, "");
   }
 
-  // TODO: Read current index
+  // Read current index
   const currentIndex = await readIndex(indexPath);
 
   try {

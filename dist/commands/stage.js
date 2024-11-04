@@ -14,7 +14,7 @@ async function stage(files) {
     if (!existsSync(indexPath)) {
         await fs.writeFile(indexPath, "");
     }
-    // TODO: Read current index
+    // Read current index
     const currentIndex = await readIndex(indexPath);
     try {
         for (const file of files) {
