@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import init from "./commands/init.js";
 import stage from "./commands/stage.js";
+import commit from "./commands/commit.js";
 
 const program = new Command();
 
@@ -25,5 +26,16 @@ program
   .alias("s")
   .description("Stage files or directories to index.")
   .action(stage);
+
+// Commit Command
+program
+  .command("commit")
+  .alias("c")
+  .option("-m", "--message <message>", "commit message")
+  .description("Stage files or directories to index.")
+  .action(async () => {
+    const options = program.opts().message;
+    await commit(options.message);
+  });
 
 program.parse(process.argv);

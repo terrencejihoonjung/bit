@@ -2,7 +2,6 @@ import { existsSync } from "fs";
 import path from "path";
 import os from "os";
 import fs from "fs/promises";
-import { writeInitialHead } from "../core/head";
 
 async function init() {
   console.log("Initializing bit repository...");
@@ -25,7 +24,7 @@ async function init() {
 
     // Create default branch
     await fs.mkdir(headsPath, { recursive: true });
-    await writeInitialHead(rootPath);
+    await writeInitialHEAD(rootPath);
 
     // Create config file
     const initialConfig = `[branch]
@@ -51,6 +50,14 @@ async function init() {
       }
     }
   }
+}
+
+async function writeInitialHEAD(
+  rootPath: string,
+  defaultBranch: string = "main"
+) {
+  const content = `ref: refs/heads/${defaultBranch}\n`;
+  await fs.writeFile(path.join(rootPath, "HEAD"), content);
 }
 
 export default init;

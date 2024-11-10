@@ -17,20 +17,25 @@ async function stage(files) {
     // Read current index
     const currentIndex = await readIndex(indexPath);
     try {
+        let filesStaged = false;
         for (const file of files) {
             // Check if file exists
             if (existsSync(file)) {
                 if ((await fs.stat(file)).isDirectory()) {
-                    await stageDirectory(file, currentIndex); // If directory, handle recursively
+                    await stageDirectory(file, currentIndex, filesStaged); // If directory, handle recursively
                 }
                 else {
+                    filesStaged = true;
                     await stageFile(file, currentIndex); //  If file, stage it
                 }
             }
         }
         // Write updated index
         await writeIndex(indexPath, currentIndex);
-        console.log("Files staged successfully");
+        if (filesStaged)
+            console.log("Files staged successfully");
+        else
+            console.log("Nothing to stage :(");
     }
     catch (error) {
         if (error instanceof Error) {
@@ -48,7 +53,7 @@ async function stageFile(file, index) {
     // Write file to object store
     await writeToObjectStore(hash, content);
 }
-async function stageDirectory(dir, index) {
+async function stageDirectory(dir, index, filesStaged) {
     // Read directory contents
     const files = await fs.readdir(dir, { withFileTypes: true });
     // Recursively stage files and subdirectories
@@ -56,9 +61,10 @@ async function stageDirectory(dir, index) {
         const filePath = path.join(dir, file.name); // Create file path using directory and current file
         if (existsSync(filePath)) {
             if (file.isDirectory()) {
-                await stageDirectory(filePath, index);
+                await stageDirectory(filePath, index, filesStaged);
             }
             else if (file.isFile()) {
+                filesStaged = true;
                 await stageFile(filePath, index);
             }
         }

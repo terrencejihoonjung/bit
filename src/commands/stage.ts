@@ -1,7 +1,9 @@
 import { existsSync } from "fs";
 import path from "path";
 import fs from "fs/promises";
-import crypto from "crypto";
+import { hashContent } from "../utils/hash";
+import { writeObject } from "../core/object";
+import { readIndex, writeIndex } from "../core";
 
 async function stage(files: string[]) {
   const bitDir = ".bit";
@@ -24,12 +26,14 @@ async function stage(files: string[]) {
   const currentIndex = await readIndex(indexPath);
 
   try {
+    let filesStaged = false;
     for (const file of files) {
       // Check if file exists
       if (existsSync(file)) {
         if ((await fs.stat(file)).isDirectory()) {
-          await stageDirectory(file, currentIndex); // If directory, handle recursively
+          await stageDirectory(file, currentIndex, filesStaged); // If directory, handle recursively
         } else {
+          filesStaged = true;
           await stageFile(file, currentIndex); //  If file, stage it
         }
       }
@@ -38,7 +42,8 @@ async function stage(files: string[]) {
     // Write updated index
     await writeIndex(indexPath, currentIndex);
 
-    console.log("Files staged successfully");
+    if (filesStaged) console.log("Files staged successfully");
+    else console.log("Nothing to stage :(");
   } catch (error) {
     if (error instanceof Error) {
       console.error("Failed to stage file(s):", error.message);
@@ -51,16 +56,20 @@ async function stageFile(file: string, index: Map<string, string>) {
   const content = await fs.readFile(file);
 
   // Hash file contents
-  const hash = crypto.createHash("sha1").update(content).digest("hex");
+  const hash = hashContent(content);
 
   // Add to index
   index.set(file, hash);
 
   // Write file to object store
-  await writeToObjectStore(hash, content);
+  await writeObject(hash, content);
 }
 
-async function stageDirectory(dir: string, index: Map<string, string>) {
+async function stageDirectory(
+  dir: string,
+  index: Map<string, string>,
+  filesStaged: boolean
+) {
   // Read directory contents
   const files = await fs.readdir(dir, { withFileTypes: true });
 
@@ -69,46 +78,13 @@ async function stageDirectory(dir: string, index: Map<string, string>) {
     const filePath = path.join(dir, file.name); // Create file path using directory and current file
     if (existsSync(filePath)) {
       if (file.isDirectory()) {
-        await stageDirectory(filePath, index);
+        await stageDirectory(filePath, index, filesStaged);
       } else if (file.isFile()) {
+        filesStaged = true;
         await stageFile(filePath, index);
       }
     }
   }
-}
-
-async function readIndex(indexPath: string): Promise<Map<string, string>> {
-  // Read index file
-  const contents = await fs.readFile(indexPath, "utf-8");
-
-  // Parse index content into a Map
-  const lines = contents.split("\n").filter((line) => line.trim() !== "");
-  return new Map(
-    lines.map((line) => {
-      const [file, hash] = line.split(" ");
-      return [file, hash];
-    })
-  );
-}
-
-async function writeIndex(indexPath: string, index: Map<string, string>) {
-  // Convert index Map to string
-  const content = Array.from(index.entries())
-    .map(([file, hash]) => `${file} ${hash}`)
-    .join("\n");
-
-  // Write string to index file
-  await fs.writeFile(indexPath, content);
-}
-
-async function writeToObjectStore(hash: string, content: Buffer) {
-  // Determine object path
-  const objectDir = path.join(".bit", "objects");
-  const objectPath = path.join(objectDir, hash.slice(0, 2), hash.slice(2));
-
-  // Create directory and write contents to file
-  await fs.mkdir(path.dirname(objectPath), { recursive: true });
-  await fs.writeFile(objectPath, content);
 }
 
 export default stage;
