@@ -1,7 +1,9 @@
 import { existsSync } from "fs";
 import path from "path";
 import fs from "fs/promises";
-import crypto from "crypto";
+import { hashContent } from "../utils/hash.js";
+import { writeObject } from "../core/object.js";
+import { readIndex, writeIndex } from "../core/index.js";
 async function stage(files) {
     const bitDir = ".bit";
     const indexPath = path.join(bitDir, "index");
@@ -47,11 +49,11 @@ async function stageFile(file, index) {
     // Read file contents
     const content = await fs.readFile(file);
     // Hash file contents
-    const hash = crypto.createHash("sha1").update(content).digest("hex");
+    const hash = hashContent(content);
     // Add to index
     index.set(file, hash);
     // Write file to object store
-    await writeToObjectStore(hash, content);
+    await writeObject(hash, content);
 }
 async function stageDirectory(dir, index, filesStaged) {
     // Read directory contents
@@ -69,31 +71,5 @@ async function stageDirectory(dir, index, filesStaged) {
             }
         }
     }
-}
-async function readIndex(indexPath) {
-    // Read index file
-    const contents = await fs.readFile(indexPath, "utf-8");
-    // Parse index content into a Map
-    const lines = contents.split("\n").filter((line) => line.trim() !== "");
-    return new Map(lines.map((line) => {
-        const [file, hash] = line.split(" ");
-        return [file, hash];
-    }));
-}
-async function writeIndex(indexPath, index) {
-    // Convert index Map to string
-    const content = Array.from(index.entries())
-        .map(([file, hash]) => `${file} ${hash}`)
-        .join("\n");
-    // Write string to index file
-    await fs.writeFile(indexPath, content);
-}
-async function writeToObjectStore(hash, content) {
-    // Determine object path
-    const objectDir = path.join(".bit", "objects");
-    const objectPath = path.join(objectDir, hash.slice(0, 2), hash.slice(2));
-    // Create directory and write contents to file
-    await fs.mkdir(path.dirname(objectPath), { recursive: true });
-    await fs.writeFile(objectPath, content);
 }
 export default stage;

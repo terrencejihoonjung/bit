@@ -2,8 +2,10 @@ import { existsSync } from "fs";
 import path from "path";
 import fs from "fs/promises";
 import crypto from "crypto";
-import { readIndex } from "../core";
-import { updateHead, getCurrentHead } from "../core/head";
+import { readIndex } from "../core/index.js";
+import { updateHead, getCurrentHead } from "../core/head.js";
+import { getIndexPath } from "../utils/fileSystem.js";
+import { createTreeFromIndex } from "../core/object.js";
 
 /**
  * Main commit function that:
@@ -14,11 +16,16 @@ import { updateHead, getCurrentHead } from "../core/head";
  * 5. Updates HEAD to point to the new commit
  */
 async function commit(message: string = "Commit changes") {
-  // TODO: Read the current index into a Map<string, string>
-  // TODO: Create tree object from index entries
-  // TODO: Write tree object and get its hash
-  // TODO: Get parent commit hash from HEAD (if exists)
-  // TODO: Create commit object with:
+  // Read the current index into a Map<string, string>
+  const indexPath = getIndexPath();
+  const index = await readIndex(indexPath);
+
+  // Create tree object from index entries
+  const treeObject = await createTreeFromIndex(index);
+
+  // Write tree object and get its hash
+  // Get parent commit hash from HEAD (if exists)
+  // Create commit object with:
   // - tree hash
   // - parent hash
   // - author

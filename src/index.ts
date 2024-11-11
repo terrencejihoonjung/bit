@@ -31,10 +31,9 @@ program
 program
   .command("commit")
   .alias("c")
-  .option("-m", "--message <message>", "commit message")
-  .description("Stage files or directories to index.")
-  .action(async () => {
-    const options = program.opts().message;
+  .option("-m, --message <value>", "commit message")
+  .description("Create a new commit with staged changes.")
+  .action(async (options) => {
     await commit(options.message);
   });
 

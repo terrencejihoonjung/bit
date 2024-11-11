@@ -2,7 +2,7 @@ import { existsSync } from "fs";
 import path from "path";
 import os from "os";
 import fs from "fs/promises";
-import { writeInitialHead } from "../core/head";
+import { writeInitialHead } from "../core/head.js";
 
 async function init() {
   console.log("Initializing bit repository...");
