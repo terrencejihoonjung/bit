@@ -21,4 +21,12 @@ export type DirectoryGroupWithDepth = {
   depth: number;
   path: string;
   files: FileEntry[];
-}[];
+};
+
+export type CommitObject = {
+  treeHash: string;
+  parent: string | null;
+  author: string;
+  timestamp: string;
+  message: string;
+};

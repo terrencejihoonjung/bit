@@ -1,6 +1,10 @@
+import path from "path";
 import { readIndex } from "../core/index.js";
+import { updateHead, getCurrentHead } from "../core/head.js";
 import { getIndexPath } from "../utils/fileSystem.js";
-import { createTreeFromIndex } from "../core/object.js";
+import { createAndHashTreeFromIndex, writeObject } from "../core/object.js";
+import { readConfig } from "../utils/config.js";
+import { hashContent } from "../utils/hash.js";
 /**
  * Main commit function that:
  * 1. Reads the current index file
@@ -13,19 +17,26 @@ async function commit(message = "Commit changes") {
     // Read the current index into a Map<string, string>
     const indexPath = getIndexPath();
     const index = await readIndex(indexPath);
-    // Create tree object from index entries
-    const treeObject = await createTreeFromIndex(index);
-    // TODO: Write tree object and get its hash
-    // TODO: Get parent commit hash from HEAD (if exists)
-    // TODO: Create commit object with:
-    // - tree hash
-    // - parent hash
-    // - author
-    // - timestamp
-    // - commit message
-    // TODO: Convert commit object to string format
-    // TODO: Write commit object to get its hash
-    // TODO: Update HEAD with new commit hash
-    // TODO: Return the commit hash
+    // Create and hash tree object from index entries
+    const treeHash = await createAndHashTreeFromIndex(index);
+    // Get parent commit hash from HEAD (if exists)
+    const parentCommit = await getCurrentHead();
+    // Create commit object
+    const configInfo = await readConfig(path.join(".bit", "config"));
+    const commitObject = {
+        treeHash: treeHash,
+        parent: parentCommit,
+        author: configInfo.name,
+        timestamp: new Date().toISOString(),
+        message: message,
+    };
+    // Hash commit object and write it to object store
+    const serializedCommitObject = Buffer.from(JSON.stringify(commitObject));
+    const commitHash = hashContent(serializedCommitObject);
+    await writeObject(commitHash, serializedCommitObject);
+    // Update HEAD with new commit hash
+    await updateHead(commitHash);
+    // Return the commit hash
+    return commitHash;
 }
 export default commit;

@@ -4,7 +4,10 @@ import {
   DirectoryGroup,
   DirectoryGroupWithDepth,
   FileEntry,
+  TreeEntry,
+  TreeObject,
 } from "../entities";
+import { hashContent } from "../utils/hash.js";
 
 // READ/WRITE OBJECTS
 export async function writeObject(hash: string, content: Buffer) {
@@ -19,16 +22,7 @@ export async function writeObject(hash: string, content: Buffer) {
 }
 
 // TREE OBJECTS
-/**
- * Create tree entries from index
- * 1. Group files by directory
- * 2. For root directory files (dir === '.'):
- *    - Add them directly to tree as blobs
- * 3. For subdirectories:
- *    - Create subtree
- *    - Add subtree to parent tree
- */
-export async function createTreeFromIndex(index: Map<string, string>) {
+export async function createAndHashTreeFromIndex(index: Map<string, string>) {
   // Create array to hold tree entries
   const indexEntries = index.entries();
 
@@ -38,11 +32,10 @@ export async function createTreeFromIndex(index: Map<string, string>) {
   // Sort dirGroups by depth (so that we can work bottom up)
   const sortedDirGroups = sortDirectoriesByDepth(dirGroups);
 
-  console.log(sortedDirGroups);
+  // Create, hash, and write tree object
+  const treeHash = await createAndHashTreeFromSortedDirGroups(sortedDirGroups);
 
-  // For each directory:
-  // - If dir === '.', add files directly as blobs
-  // - Else, create subtree and add it to parent tree
+  return treeHash;
 }
 
 function createDirectoryGroups(
@@ -69,8 +62,8 @@ function createDirectoryGroups(
 
 function sortDirectoriesByDepth(
   dirGroups: DirectoryGroup
-): DirectoryGroupWithDepth {
-  const dirLevels: DirectoryGroupWithDepth = [];
+): DirectoryGroupWithDepth[] {
+  const dirLevels: DirectoryGroupWithDepth[] = [];
 
   // Convert directory groups into DirectoryLevel objects
   for (const [dirPath, files] of Object.entries(dirGroups)) {
@@ -85,6 +78,70 @@ function sortDirectoriesByDepth(
 
   // Sort by depth in descending order (deepest first)
   return dirLevels.sort((a, b) => b.depth - a.depth);
+}
+
+async function createAndHashTreeFromSortedDirGroups(
+  sortedDirGroups: DirectoryGroupWithDepth[]
+): Promise<string> {
+  // Keep track of all tree object hashes being created (maps directory to tree object hash)
+  const treeHashes = new Map<string, string>();
+
+  // Process each dirGroup, starting from the deepest level
+  for (const dirGroup of sortedDirGroups) {
+    const treeEntries: TreeEntry[] = [];
+
+    // Add blob entries (files)
+    for (const file of dirGroup.files) {
+      treeEntries.push({
+        type: "blob",
+        hash: file.hash,
+        name: file.name,
+      });
+    }
+
+    // Add tree entries (subdirectories)
+    for (const [dirPath, hash] of treeHashes) {
+      const parentDir = path.dirname(dirPath);
+      if (dirGroup.path === parentDir) {
+        treeEntries.push({
+          type: "tree",
+          hash: hash,
+          name: path.basename(dirPath),
+        });
+      }
+    }
+
+    // Sort tree entries alphabetically
+    treeEntries.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Create tree object
+    const treeObject: TreeObject = { entries: treeEntries };
+
+    // Seralize and hash tree object
+    const serializedTreeObject = serializeTreeObject(treeObject);
+    const treeHash = hashContent(serializedTreeObject);
+
+    // Write tree object to object store
+    await writeObject(treeHash, serializedTreeObject);
+
+    // Store tree object hash to treeHashes
+    treeHashes.set(dirGroup.path, treeHash);
+  }
+
+  // Return the root tree object hash (last item in treeHashes)
+  const rootPath = sortedDirGroups[sortedDirGroups.length - 1].path;
+  return treeHashes.get(rootPath) as string;
+}
+
+function serializeTreeObject(treeObject: TreeObject) {
+  // Serialize each entry
+  const serializedEntries = treeObject.entries
+    .map((entry) => {
+      return `${entry.type} ${entry.hash} ${entry.name}`;
+    })
+    .join("\n");
+
+  return Buffer.from(`tree\n${serializedEntries}`);
 }
 
 // COMMIT OBJECTS

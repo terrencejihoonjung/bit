@@ -3,6 +3,7 @@ import path from "path";
 import os from "os";
 import fs from "fs/promises";
 import { writeInitialHead } from "../core/head.js";
+import { initializeConfig } from "../utils/config.js";
 async function init() {
     console.log("Initializing bit repository...");
     // Check for existing bit repository
@@ -21,12 +22,7 @@ async function init() {
         await fs.mkdir(headsPath, { recursive: true });
         await writeInitialHead(rootPath);
         // Create config file
-        const initialConfig = `[branch]
-      default = main
-    [user]
-      name = ${username}
-    `;
-        await fs.writeFile(path.join(rootPath, "config"), initialConfig);
+        await initializeConfig(rootPath, username);
         // Create objects directory
         await fs.mkdir(path.join(rootPath, "objects"));
         // User Feedback
