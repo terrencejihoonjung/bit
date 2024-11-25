@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import init from "./commands/init.js";
 import stage from "./commands/stage.js";
+import unstage from "./commands/unstage.js";
 import commit from "./commands/commit.js";
 
 const program = new Command();
@@ -26,6 +27,12 @@ program
   .alias("s")
   .description("Stage files or directories to index.")
   .action(stage);
+
+// Unstage Command
+program
+  .command("unstage [files...]")
+  .description("Unstage files or directories to index.")
+  .action(unstage);
 
 // Commit Command
 program

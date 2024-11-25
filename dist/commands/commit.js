@@ -6,12 +6,12 @@ import { createAndHashTreeFromIndex, writeObject } from "../core/object.js";
 import { readConfig } from "../utils/config.js";
 import { hashContent } from "../utils/hash.js";
 /**
- * Main commit function that:
- * 1. Reads the current index file
- * 2. Creates a tree object from the index entries
- * 3. Gets the parent commit hash (if exists)
- * 4. Creates and writes the commit object
- * 5. Updates HEAD to point to the new commit
+Main commit function that:
+  1. Reads the current index file
+  2. Creates a tree object from the index entries
+  3. Gets the parent commit hash (if exists)
+  4. Creates and writes the commit object
+  5. Updates HEAD to point to the new commit
  */
 async function commit(message = "Commit changes") {
     // Read the current index into a Map<string, string>
