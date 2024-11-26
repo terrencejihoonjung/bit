@@ -10,6 +10,15 @@ import {
 import { hashContent } from "../utils/hash.js";
 
 // READ/WRITE OBJECTS
+export async function readObject(hash: string) {
+  // Determine object path
+  const objectDir = path.join(".bit", "objects");
+  const objectPath = path.join(objectDir, hash.slice(0, 2), hash.slice(2));
+
+  const contents = await fs.readFile(objectPath, "utf-8");
+  return JSON.parse(contents);
+}
+
 export async function writeObject(hash: string, content: Buffer) {
   // Determine object path
   const objectDir = path.join(".bit", "objects");
@@ -145,15 +154,3 @@ function serializeTreeObject(treeObject: TreeObject) {
 }
 
 // COMMIT OBJECTS
-/**
- * Format commit object as string
- * Format:
- * tree <hash>
- * parent <hash>
- * author <name>
- * timestamp <ISO string>
- * message <message>
- */
-function formatCommitObject(commit: any) {
-  // TODO: Convert commit object to formatted string
-}

@@ -5,6 +5,8 @@ import init from "./commands/init.js";
 import stage from "./commands/stage.js";
 import unstage from "./commands/unstage.js";
 import commit from "./commands/commit.js";
+import log from "./commands/log.js";
+import status from "./commands/status.js";
 
 const program = new Command();
 
@@ -20,6 +22,12 @@ program
   .alias("i")
   .description("Initialize a new bit repository")
   .action(init);
+
+// Status Command
+program
+  .command("status")
+  .description("Check status of staged files.")
+  .action(status);
 
 // Stage Command
 program
@@ -43,5 +51,12 @@ program
   .action(async (options) => {
     await commit(options.message);
   });
+
+// Log Command
+program
+  .command("log")
+  .alias("l")
+  .description("Display commit history")
+  .action(log);
 
 program.parse(process.argv);

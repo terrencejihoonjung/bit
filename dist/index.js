@@ -4,6 +4,7 @@ import init from "./commands/init.js";
 import stage from "./commands/stage.js";
 import unstage from "./commands/unstage.js";
 import commit from "./commands/commit.js";
+import log from "./commands/log.js";
 const program = new Command();
 // Initial Configuration
 program
@@ -36,4 +37,10 @@ program
     .action(async (options) => {
     await commit(options.message);
 });
+// Log Command
+program
+    .command("log")
+    .alias("l")
+    .description("Display commit history")
+    .action(log);
 program.parse(process.argv);

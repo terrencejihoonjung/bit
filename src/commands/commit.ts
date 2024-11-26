@@ -45,7 +45,7 @@ async function commit(message: string = "Commit changes") {
   await updateHead(commitHash);
 
   // Return the commit hash
-  return commitHash;
+  console.log(`Successfully created commit: ${commitHash}`);
 }
 
 export default commit;
