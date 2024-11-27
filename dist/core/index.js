@@ -1,5 +1,6 @@
 import { existsSync } from "fs";
 import fs from "fs/promises";
+import { getIndexPath } from "../utils/fileSystem.js";
 export async function readIndex(indexPath) {
     // Check if index exists
     if (!existsSync(indexPath)) {
@@ -21,4 +22,8 @@ export async function writeIndex(indexPath, index) {
         .join("\n");
     // Write string to index file
     await fs.writeFile(indexPath, content);
+}
+export async function clearIndex() {
+    const indexPath = getIndexPath();
+    await writeIndex(indexPath, new Map());
 }

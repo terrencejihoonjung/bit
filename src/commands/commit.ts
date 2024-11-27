@@ -1,5 +1,5 @@
 import path from "path";
-import { readIndex } from "../core/index.js";
+import { clearIndex, readIndex } from "../core/index.js";
 import { updateHead, getCurrentHead } from "../core/head.js";
 import { getIndexPath } from "../utils/fileSystem.js";
 import { createAndHashTreeFromIndex, writeObject } from "../core/object.js";
@@ -43,6 +43,9 @@ async function commit(message: string = "Commit changes") {
 
   // Update HEAD with new commit hash
   await updateHead(commitHash);
+
+  // Clear index
+  await clearIndex();
 
   // Return the commit hash
   console.log(`Successfully created commit: ${commitHash}`);

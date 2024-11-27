@@ -5,6 +5,7 @@ import stage from "./commands/stage.js";
 import unstage from "./commands/unstage.js";
 import commit from "./commands/commit.js";
 import log from "./commands/log.js";
+import status from "./commands/status.js";
 const program = new Command();
 // Initial Configuration
 program
@@ -17,6 +18,11 @@ program
     .alias("i")
     .description("Initialize a new bit repository")
     .action(init);
+// Status Command
+program
+    .command("status")
+    .description("Check status of staged files.")
+    .action(status);
 // Stage Command
 program
     .command("stage [files...]")

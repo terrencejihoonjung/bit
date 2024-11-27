@@ -1,6 +1,7 @@
 import { existsSync } from "fs";
 import path from "path";
 
+// BIT REPO
 export const getBitPath = () => {
   if (!existsSync(".bit")) {
     throw new Error(

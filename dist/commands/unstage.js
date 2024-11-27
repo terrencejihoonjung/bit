@@ -1,19 +1,8 @@
-import path from "path";
 import { readIndex, writeIndex } from "../core/index.js";
 import { existsSync } from "fs";
-import fs from "fs/promises";
+import { getIndexPath } from "../utils/fileSystem.js";
 async function unstage(files) {
-    const bitDir = ".bit";
-    const indexPath = path.join(bitDir, "index");
-    // Check if .bit directory exists
-    if (!existsSync(bitDir)) {
-        console.error(".bit repository doesn't exist. Please initialize a repository first.");
-        return;
-    }
-    // Check if index exists, create if not
-    if (!existsSync(indexPath)) {
-        await fs.writeFile(indexPath, "");
-    }
+    const indexPath = getIndexPath();
     // Read index
     const index = await readIndex(indexPath);
     try {
