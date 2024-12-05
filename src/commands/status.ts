@@ -1,9 +1,12 @@
+import { getCurrentHead } from "../core/head.js";
 import { readIndex } from "../core/index.js";
-import { getIndexPath } from "../utils/fileSystem.js";
+import { readObject } from "../core/object.js";
+import { getHeadPath, getIndexPath } from "../utils/fileSystem.js";
 import chalk from "chalk";
 
-// Go through entire project and organize based on whether the file is in the index or not.
+// Print currently staged files
 async function status() {
+  // Get index
   const indexPath = getIndexPath();
   const index = await readIndex(indexPath);
 
@@ -12,6 +15,7 @@ async function status() {
   printStatus(stagedFiles);
 }
 
+// Console output on bit status command
 function printStatus(stagedFiles: string[]) {
   console.log("\n");
   console.log(chalk.blue("STAGED FILES"));

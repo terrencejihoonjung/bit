@@ -29,11 +29,12 @@ async function log() {
 }
 
 function printCommit(commitObjects: CommitObject[]) {
-  for (const commitObject of commitObjects) {
-    console.log("\n");
-    console.log("COMMIT HISTORY");
-    console.log("----------------------------------------------------------");
+  console.log("\n");
+  console.log("COMMIT HISTORY");
+  console.log("----------------------------------------------------------");
+  console.log("\n");
 
+  for (const commitObject of commitObjects) {
     console.log(
       chalk.green(`Commit: ${commitObject.treeHash} by ${commitObject.author}`)
     );
@@ -42,10 +43,11 @@ function printCommit(commitObjects: CommitObject[]) {
         `Message: ${commitObject.message} written at ${commitObject.timestamp}`
       )
     );
-
-    console.log("----------------------------------------------------------");
     console.log("\n");
   }
+
+  console.log("----------------------------------------------------------");
+  console.log("\n");
 }
 
 export default log;
