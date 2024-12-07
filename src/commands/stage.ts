@@ -4,6 +4,7 @@ import fs from "fs/promises";
 import { hashContent } from "../utils/hash.js";
 import { writeObject } from "../core/object.js";
 import { readIndex, writeIndex } from "../core/index.js";
+import { getBitIgnorePath } from "../utils/fileSystem.js";
 
 async function stage(files: string[]) {
   const bitDir = ".bit";
@@ -25,13 +26,28 @@ async function stage(files: string[]) {
   // Read current index
   const currentIndex = await readIndex(indexPath);
 
+  const bitIgnorePath = getBitIgnorePath();
+  const bitIgnoreContents = bitIgnorePath
+    ? await fs.readFile(bitIgnorePath, "utf-8")
+    : "";
+  const bitIgnore = new Set(
+    bitIgnoreContents.split("\n").filter((path) => path.trim().length > 0)
+  );
+
   try {
     let filesStaged = false;
     for (const file of files) {
+      if (bitIgnore.has(file)) continue;
+
       // Check if file exists
       if (existsSync(file)) {
         if ((await fs.stat(file)).isDirectory()) {
-          await stageDirectory(file, currentIndex, filesStaged); // If directory, handle recursively
+          filesStaged = await stageDirectory(
+            file,
+            currentIndex,
+            filesStaged,
+            bitIgnore
+          ); // If directory, handle recursively
         } else {
           filesStaged = true;
           await stageFile(file, currentIndex); //  If file, stage it
@@ -68,7 +84,8 @@ async function stageFile(file: string, index: Map<string, string>) {
 async function stageDirectory(
   dir: string,
   index: Map<string, string>,
-  filesStaged: boolean
+  filesStaged: boolean,
+  bitIgnore: Set<string>
 ) {
   // Read directory contents
   const files = await fs.readdir(dir, { withFileTypes: true });
@@ -76,15 +93,19 @@ async function stageDirectory(
   // Recursively stage files and subdirectories
   for (const file of files) {
     const filePath = path.join(dir, file.name); // Create file path using directory and current file
+    if (bitIgnore.has(filePath)) continue;
+
     if (existsSync(filePath)) {
       if (file.isDirectory()) {
-        await stageDirectory(filePath, index, filesStaged);
+        await stageDirectory(filePath, index, filesStaged, bitIgnore);
       } else if (file.isFile()) {
         filesStaged = true;
         await stageFile(filePath, index);
       }
     }
   }
+
+  return filesStaged;
 }
 
 export default stage;

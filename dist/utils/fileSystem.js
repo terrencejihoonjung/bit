@@ -23,3 +23,9 @@ export const getIndexPath = () => {
     }
     return indexPath;
 };
+export const getBitIgnorePath = () => {
+    const bitIgnorePath = "./.bitignore";
+    if (!existsSync(bitIgnorePath))
+        return null;
+    return bitIgnorePath;
+};
