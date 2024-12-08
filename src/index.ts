@@ -7,6 +7,7 @@ import unstage from "./commands/unstage.js";
 import commit from "./commands/commit.js";
 import log from "./commands/log.js";
 import status from "./commands/status.js";
+import { switchBranch, createBranch } from "./commands/switch.js";
 
 const program = new Command();
 
@@ -58,5 +59,15 @@ program
   .alias("l")
   .description("Display commit history")
   .action(log);
+
+program
+  .command("switch <branch>")
+  .description("Switch to an existing branch")
+  .option("-c, --create", "Create and switch to a new branch")
+  .action(async (branch, options) => {
+    // Create and switch to a new branch
+    if (options.create) await createBranch(branch);
+    await switchBranch(branch);
+  });
 
 program.parse(process.argv);

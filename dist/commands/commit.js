@@ -1,6 +1,6 @@
 import path from "path";
 import { clearIndex, readIndex } from "../core/index.js";
-import { updateHead, getCurrentHead } from "../core/head.js";
+import { updateCurrentHeadHash, getCurrentHeadHash } from "../core/head.js";
 import { getIndexPath } from "../utils/fileSystem.js";
 import { createAndHashTreeFromIndex, writeObject } from "../core/object.js";
 import { readConfig } from "../utils/config.js";
@@ -20,7 +20,7 @@ async function commit(message = "Commit changes") {
     // Create and hash tree object from index entries
     const treeHash = await createAndHashTreeFromIndex(index);
     // Get parent commit hash from HEAD (if exists)
-    const parentCommit = await getCurrentHead();
+    const parentCommit = await getCurrentHeadHash();
     // Create commit object
     const configInfo = await readConfig(path.join(".bit", "config"));
     const commitObject = {
@@ -35,7 +35,7 @@ async function commit(message = "Commit changes") {
     const commitHash = hashContent(serializedCommitObject);
     await writeObject(commitHash, serializedCommitObject);
     // Update HEAD with new commit hash
-    await updateHead(commitHash);
+    await updateCurrentHeadHash(commitHash);
     // Clear index
     await clearIndex();
     // Return the commit hash

@@ -1,11 +1,11 @@
 import chalk from "chalk";
-import { getCurrentHead } from "../core/head.js";
+import { getCurrentHeadHash } from "../core/head.js";
 import { readObject } from "../core/object.js";
 import { CommitObject } from "../entities.js";
 
 async function log() {
   // Check current head and get last commit object
-  const currentHeadHash = await getCurrentHead();
+  const currentHeadHash = await getCurrentHeadHash();
   if (!currentHeadHash) {
     throw new Error("Failed to get current head hash");
   }

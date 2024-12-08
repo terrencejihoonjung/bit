@@ -1,7 +1,5 @@
-import { getCurrentHead } from "../core/head.js";
 import { readIndex } from "../core/index.js";
-import { readObject } from "../core/object.js";
-import { getHeadPath, getIndexPath } from "../utils/fileSystem.js";
+import { getIndexPath } from "../utils/fileSystem.js";
 import chalk from "chalk";
 
 // Print currently staged files

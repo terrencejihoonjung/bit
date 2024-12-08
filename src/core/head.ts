@@ -1,9 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
-import { getHeadPath } from "../utils/fileSystem.js";
+import { getBitPath, getHeadPath } from "../utils/fileSystem.js";
 import { existsSync } from "fs";
 
-export async function writeInitialHead(
+export async function initializeHead(
   rootPath: string,
   defaultBranch: string = "main"
 ) {
@@ -16,7 +16,21 @@ export async function writeInitialHead(
   }
 }
 
-export async function updateHead(commitHash: string) {
+// Given branch name, return the commit hash corresponding to that branch
+export async function getHead(branchName: string) {
+  const bitPath = getBitPath();
+  const headsPath = path.join(bitPath, "refs", "heads");
+  const branchPath = path.join(headsPath, branchName);
+
+  if (!existsSync(branchPath)) {
+    throw new Error("Could not find branch to switch to");
+  }
+
+  const commitHash = await fs.readFile(branchPath, "utf-8");
+  return { name: branchName, hash: commitHash };
+}
+
+export async function updateCurrentHeadHash(commitHash: string) {
   try {
     // Get HEAD path
     const fullHeadPath = await getCurrentHeadPath();
@@ -31,12 +45,16 @@ export async function updateHead(commitHash: string) {
   }
 }
 
-export async function getCurrentHead() {
+export async function updateCurrentHead(branchName: string) {
+  const headPath = getHeadPath();
+  await fs.writeFile(headPath, `refs: refs/heads/${branchName}`);
+}
+
+export async function getCurrentHeadHash() {
   const fullHeadPath = await getCurrentHeadPath();
   if (!fullHeadPath) return null;
-
-  if (!existsSync(fullHeadPath)) return null;
-  const hash = await fs.readFile(fullHeadPath, "utf-8");
+  const pathElements = fullHeadPath.split("/");
+  const { name, hash } = await getHead(pathElements[pathElements.length - 1]);
 
   // Check if there is no hash
   if (!hash) {

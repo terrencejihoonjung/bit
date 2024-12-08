@@ -1,8 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
-import { getHeadPath } from "../utils/fileSystem.js";
+import { getBitPath, getHeadPath } from "../utils/fileSystem.js";
 import { existsSync } from "fs";
-export async function writeInitialHead(rootPath, defaultBranch = "main") {
+export async function initializeHead(rootPath, defaultBranch = "main") {
     try {
         const content = `ref: refs/heads/${defaultBranch}`;
         const headPath = path.join(rootPath, "HEAD");
@@ -12,7 +12,18 @@ export async function writeInitialHead(rootPath, defaultBranch = "main") {
         console.error(`Error writing initial HEAD: ${error}`);
     }
 }
-export async function updateHead(commitHash) {
+// Given branch name, return the commit hash corresponding to that branch
+export async function getHead(branchName) {
+    const bitPath = getBitPath();
+    const headsPath = path.join(bitPath, "refs", "heads");
+    const branchPath = path.join(headsPath, branchName);
+    if (!existsSync(branchPath)) {
+        throw new Error("Could not find branch to switch to");
+    }
+    const commitHash = await fs.readFile(branchPath, "utf-8");
+    return { name: branchName, hash: commitHash };
+}
+export async function updateCurrentHeadHash(commitHash) {
     try {
         // Get HEAD path
         const fullHeadPath = await getCurrentHeadPath();
@@ -26,13 +37,16 @@ export async function updateHead(commitHash) {
         console.error(`Error updating HEAD: ${error}`);
     }
 }
-export async function getCurrentHead() {
+export async function updateCurrentHead(branchName) {
+    const headPath = getHeadPath();
+    await fs.writeFile(headPath, `refs: refs/heads/${branchName}`);
+}
+export async function getCurrentHeadHash() {
     const fullHeadPath = await getCurrentHeadPath();
     if (!fullHeadPath)
         return null;
-    if (!existsSync(fullHeadPath))
-        return null;
-    const hash = await fs.readFile(fullHeadPath, "utf-8");
+    const pathElements = fullHeadPath.split("/");
+    const { name, hash } = await getHead(pathElements[pathElements.length - 1]);
     // Check if there is no hash
     if (!hash) {
         console.warn("HEAD is empty.");
