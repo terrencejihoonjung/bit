@@ -7,6 +7,7 @@ import commit from "./commands/commit.js";
 import log from "./commands/log.js";
 import status from "./commands/status.js";
 import { switchBranch, createBranch } from "./commands/switch.js";
+import branch from "./commands/branch.js";
 const program = new Command();
 // Initial Configuration
 program
@@ -18,23 +19,23 @@ program
     .command("init")
     .alias("i")
     .description("Initialize a new bit repository")
-    .action(init);
+    .action(async () => await init());
 // Status Command
 program
     .command("status")
     .description("Check status of staged files.")
-    .action(status);
+    .action(async () => status());
 // Stage Command
 program
     .command("stage [files...]")
     .alias("s")
     .description("Stage files or directories to index.")
-    .action(stage);
+    .action(async (files) => await stage(files));
 // Unstage Command
 program
     .command("unstage [files...]")
     .description("Unstage files or directories to index.")
-    .action(unstage);
+    .action(async (files) => await unstage(files));
 // Commit Command
 program
     .command("commit")
@@ -49,7 +50,14 @@ program
     .command("log")
     .alias("l")
     .description("Display commit history")
-    .action(log);
+    .action(async () => await log());
+// Branch Command
+program
+    .command("branch")
+    .alias("b")
+    .description("Display all branches and currently checked out branch")
+    .action(async () => await branch());
+// Switch Command
 program
     .command("switch <branch>")
     .description("Switch to an existing branch")

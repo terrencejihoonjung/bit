@@ -15,6 +15,14 @@ export const getHeadPath = () => {
     }
     return headPath;
 };
+export const getRefHeadsPath = () => {
+    const bitPath = getBitPath();
+    const refsHeadsPath = path.join(bitPath, "refs", "heads");
+    if (!existsSync(refsHeadsPath)) {
+        throw new Error("refs/heads does not exist in .bit repository");
+    }
+    return refsHeadsPath;
+};
 export const getIndexPath = () => {
     const bitPath = getBitPath();
     const indexPath = path.join(bitPath, "index");

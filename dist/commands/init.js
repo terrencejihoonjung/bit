@@ -2,7 +2,7 @@ import { existsSync } from "fs";
 import path from "path";
 import os from "os";
 import fs from "fs/promises";
-import { initializeHead } from "../core/head.js";
+import { initializeHEAD } from "../core/head.js";
 import { initializeConfig } from "../utils/config.js";
 async function init() {
     console.log("Initializing bit repository...");
@@ -20,7 +20,7 @@ async function init() {
         const headsPath = path.join(rootPath, "refs", "heads");
         // Create default branch
         await fs.mkdir(headsPath, { recursive: true });
-        await initializeHead(rootPath);
+        await initializeHEAD(rootPath);
         // Create config file
         await initializeConfig(rootPath, username);
         // Create objects directory

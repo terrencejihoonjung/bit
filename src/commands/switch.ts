@@ -4,7 +4,7 @@ import { getBitPath } from "../utils/fileSystem.js";
 import {
   getCurrentHeadHash,
   getHead,
-  updateCurrentHead,
+  updateHEAD,
 } from "../core/head.js";
 
 function getBranchPath(branch: string) {
@@ -21,7 +21,7 @@ Given a branch name:
 */
 export async function switchBranch(branch: string) {
   const { name, hash } = await getHead(branch);
-  await updateCurrentHead(name);
+  await updateHEAD(name);
 }
 
 export async function createBranch(branch: string) {
